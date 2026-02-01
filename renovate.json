@@ -1,7 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>tryghost/renovate-config"],
-  "schedule": ["after 12am and before 5am on every weekday"],
+  "extends": [
+    "github>tryghost/renovate-config"
+  ],
+  "schedule": [
+    "after 12am and before 5am every weekday"
+  ],
   "timezone": "UTC",
   "automerge": true,
   "automergeType": "pr",
