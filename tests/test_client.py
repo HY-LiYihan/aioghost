@@ -15,9 +15,11 @@ from aioghost.exceptions import (
     GhostValidationError,
 )
 
-
 API_URL = "https://test.ghost.io"
-API_KEY = "650b7a9f8e8c1234567890ab:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+API_KEY = (
+    "650b7a9f8e8c1234567890ab:"
+    "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+)
 
 
 @pytest.fixture
@@ -218,9 +220,9 @@ async def test_get_latest_post_none(api: GhostAdminAPI):
 async def test_get_newsletters(api: GhostAdminAPI):
     """Test getting newsletters."""
     with aioresponses() as m:
-        newsletters_pattern = re.compile(rf"^{re.escape(API_URL)}/ghost/api/admin/newsletters/\?.*$")
+        pattern = re.compile(rf"^{re.escape(API_URL)}/ghost/api/admin/newsletters/\?.*$")
         m.get(
-            newsletters_pattern,
+            pattern,
             payload={
                 "newsletters": [
                     {"name": "Weekly", "count": {"members": 1000}},
