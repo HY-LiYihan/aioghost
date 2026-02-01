@@ -10,7 +10,7 @@ from aioghost import GhostAdminAPI, GhostAuthError
 def api():
     """Create a test API client."""
     return GhostAdminAPI(
-        site_url="https://test.ghost.io",
+        api_url="https://test.ghost.io",
         admin_api_key="650b7a9f8e8c1234567890ab:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
     )
 
@@ -52,11 +52,20 @@ async def test_get_members_count(api: GhostAdminAPI):
         assert members["comped"] == 5
 
 
+def test_https_required():
+    """Test that HTTP URLs are rejected."""
+    with pytest.raises(ValueError, match="must use HTTPS"):
+        GhostAdminAPI(
+            api_url="http://test.ghost.io",
+            admin_api_key="650b7a9f8e8c1234567890ab:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+        )
+
+
 @pytest.mark.asyncio
 async def test_invalid_api_key_format():
     """Test that invalid API key format raises error."""
     api = GhostAdminAPI(
-        site_url="https://test.ghost.io",
+        api_url="https://test.ghost.io",
         admin_api_key="invalid-key-no-colon",
     )
 
@@ -68,7 +77,7 @@ async def test_invalid_api_key_format():
 async def test_invalid_api_key_secret():
     """Test that invalid API key secret raises error."""
     api = GhostAdminAPI(
-        site_url="https://test.ghost.io",
+        api_url="https://test.ghost.io",
         admin_api_key="validid:not-hex-string",
     )
 

@@ -28,18 +28,23 @@ class GhostAdminAPI:
 
     def __init__(
         self,
-        site_url: str,
+        api_url: str,
         admin_api_key: str,
         session: aiohttp.ClientSession | None = None,
     ) -> None:
         """Initialize the API client.
 
         Args:
-            site_url: The Ghost site URL (e.g., https://example.ghost.io)
+            api_url: The Ghost API URL (e.g., https://example.ghost.io)
             admin_api_key: The Admin API key (format: id:secret)
             session: Optional aiohttp session. If not provided, one will be created.
+
+        Raises:
+            ValueError: If api_url does not use HTTPS.
         """
-        self.site_url = site_url.rstrip("/")
+        if not api_url.startswith("https://"):
+            raise ValueError("api_url must use HTTPS")
+        self.api_url = api_url.rstrip("/")
         self.admin_api_key = admin_api_key
         self._session = session
         self._owns_session = session is None
@@ -124,7 +129,7 @@ class GhostAdminAPI:
             GhostError: For other API errors
         """
         session = await self._get_session()
-        url = f"{self.site_url}{endpoint}"
+        url = f"{self.api_url}{endpoint}"
         headers = self._get_auth_headers()
 
         if json:
@@ -370,7 +375,7 @@ class GhostAdminAPI:
 
         async def fetch_count(endpoint: str, key: str) -> None:
             try:
-                url = f"{self.site_url}/.ghost/activitypub/{endpoint}/index"
+                url = f"{self.api_url}/.ghost/activitypub/{endpoint}/index"
                 async with session.get(url, headers=headers) as response:
                     if response.ok:
                         data = await response.json()

@@ -16,7 +16,7 @@ from aioghost import GhostAdminAPI
 
 async def main():
     async with GhostAdminAPI(
-        site_url="https://your-site.ghost.io",
+        api_url="https://your-site.ghost.io",
         admin_api_key="your-admin-api-key"
     ) as api:
         # Get site info
@@ -90,7 +90,7 @@ from aioghost import GhostAdminAPI
 async def main():
     async with aiohttp.ClientSession() as session:
         api = GhostAdminAPI(
-            site_url="https://your-site.ghost.io",
+            api_url="https://your-site.ghost.io",
             admin_api_key="your-key",
             session=session,
         )
