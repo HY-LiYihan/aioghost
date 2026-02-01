@@ -34,16 +34,17 @@ dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
     "pytest-aiohttp>=1.0.0",
+    "pytest-cov>=7.0.0",
     "aioresponses>=0.7.0",
     "ruff>=0.1.0",
     "mypy>=1.0.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/vitrixbot/aioghost"
-Documentation = "https://github.com/vitrixbot/aioghost#readme"
-Repository = "https://github.com/vitrixbot/aioghost"
-Issues = "https://github.com/vitrixbot/aioghost/issues"
+Homepage = "https://github.com/TryGhost/aioghost"
+Documentation = "https://github.com/TryGhost/aioghost#readme"
+Repository = "https://github.com/TryGhost/aioghost"
+Issues = "https://github.com/TryGhost/aioghost/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/aioghost"]
