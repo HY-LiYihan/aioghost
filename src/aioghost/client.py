@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
 import aiohttp
 import jwt
@@ -179,7 +179,7 @@ class GhostAdminAPI:
             Site info dict with title, description, url, etc.
         """
         data = await self._get("/ghost/api/admin/site/")
-        return data.get("site", {})
+        return cast(dict[str, Any], data.get("site", {}))
 
     # -------------------------------------------------------------------------
     # Posts
@@ -198,9 +198,9 @@ class GhostAdminAPI:
         )
 
         return {
-            "published": published.get("meta", {}).get("pagination", {}).get("total", 0),
-            "drafts": drafts.get("meta", {}).get("pagination", {}).get("total", 0),
-            "scheduled": scheduled.get("meta", {}).get("pagination", {}).get("total", 0),
+            "published": int(published.get("meta", {}).get("pagination", {}).get("total", 0)),
+            "drafts": int(drafts.get("meta", {}).get("pagination", {}).get("total", 0)),
+            "scheduled": int(scheduled.get("meta", {}).get("pagination", {}).get("total", 0)),
         }
 
     async def get_latest_post(self) -> dict[str, Any] | None:
@@ -275,7 +275,7 @@ class GhostAdminAPI:
             "/ghost/api/admin/newsletters/",
             {"include": "count.members"},
         )
-        return data.get("newsletters", [])
+        return cast(list[dict[str, Any]], data.get("newsletters", []))
 
     # -------------------------------------------------------------------------
     # Email / Latest Email
@@ -337,7 +337,7 @@ class GhostAdminAPI:
             Total number of comments.
         """
         data = await self._get("/ghost/api/admin/comments/", {"limit": 1})
-        return data.get("meta", {}).get("pagination", {}).get("total", 0)
+        return int(data.get("meta", {}).get("pagination", {}).get("total", 0))
 
     # -------------------------------------------------------------------------
     # Tiers
@@ -350,7 +350,7 @@ class GhostAdminAPI:
             List of tier dicts.
         """
         data = await self._get("/ghost/api/admin/tiers/")
-        return data.get("tiers", [])
+        return cast(list[dict[str, Any]], data.get("tiers", []))
 
     # -------------------------------------------------------------------------
     # ActivityPub / Social Web
@@ -405,7 +405,8 @@ class GhostAdminAPI:
             "/ghost/api/admin/webhooks/",
             {"webhooks": [{"event": event, "target_url": target_url}]},
         )
-        return data.get("webhooks", [{}])[0]
+        webhooks = cast(list[dict[str, Any]], data.get("webhooks", [{}]))
+        return webhooks[0]
 
     async def delete_webhook(self, webhook_id: str) -> None:
         """Delete a webhook from Ghost.
