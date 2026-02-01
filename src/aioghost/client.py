@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import aiohttp
@@ -56,7 +56,7 @@ class GhostAdminAPI:
         except ValueError as err:
             raise GhostAuthError("Invalid API key secret. Expected hex string.") from err
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         payload = {
             "iat": int(now.timestamp()),
             "exp": int((now + timedelta(minutes=JWT_EXPIRY_MINUTES)).timestamp()),
@@ -83,7 +83,7 @@ class GhostAdminAPI:
         if self._owns_session and self._session and not self._session.closed:
             await self._session.close()
 
-    async def __aenter__(self) -> "GhostAdminAPI":
+    async def __aenter__(self) -> GhostAdminAPI:
         """Async context manager entry."""
         return self
 

@@ -2,9 +2,9 @@
 
 from .client import GhostAdminAPI
 from .exceptions import (
-    GhostError,
     GhostAuthError,
     GhostConnectionError,
+    GhostError,
     GhostNotFoundError,
     GhostValidationError,
 )

@@ -3,7 +3,7 @@
 import pytest
 from aioresponses import aioresponses
 
-from aioghost import GhostAdminAPI, GhostAuthError, GhostConnectionError
+from aioghost import GhostAdminAPI, GhostAuthError
 
 
 @pytest.fixture
