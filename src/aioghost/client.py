@@ -147,7 +147,8 @@ class GhostAdminAPI:
                     text = await response.text()
                     raise GhostError(f"API error {response.status}: {text}")
 
-                return await response.json()
+                result: dict[str, Any] = await response.json()
+                return result
 
         except aiohttp.ClientError as err:
             raise GhostConnectionError(f"Connection failed: {err}") from err
