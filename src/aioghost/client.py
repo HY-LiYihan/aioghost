@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
@@ -19,6 +20,31 @@ from .exceptions import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _convert_to_mobiledoc(content: str) -> str:
+    """Convert plain text/HTML to Ghost mobiledoc format.
+
+    Args:
+        content: The content to convert.
+
+    Returns:
+        JSON string of mobiledoc format.
+    """
+    # Ghost mobiledoc basic structure for plain text/HTML
+    mobiledoc = {
+        "version": "0.3.1",
+        "markups": [],
+        "atoms": [],
+        "cards": [],
+        "sections": [
+            [10, 0]  # Markdown card with content
+        ]
+    }
+    # Using HTML card for simplicity
+    mobiledoc["cards"] = [["html", content]]
+    mobiledoc["sections"] = [[10, 0]]
+    return json.dumps(mobiledoc)
 
 JWT_EXPIRY_MINUTES = 5
 
@@ -174,6 +200,12 @@ class GhostAdminAPI:
         """Make a DELETE request."""
         return await self._request("DELETE", endpoint)
 
+    async def _put(
+        self, endpoint: str, json: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        """Make a PUT request."""
+        return await self._request("PUT", endpoint, json=json)
+
     # -------------------------------------------------------------------------
     # Site
     # -------------------------------------------------------------------------
@@ -221,6 +253,138 @@ class GhostAdminAPI:
         )
         posts = data.get("posts", [])
         return posts[0] if posts else None
+
+    async def get_post(self, post_id: str) -> dict[str, Any] | None:
+        """Get a post by ID.
+
+        Args:
+            post_id: The post ID.
+
+        Returns:
+            Post dict or None if not found.
+        """
+        try:
+            data = await self._get(f"/ghost/api/admin/posts/{post_id}/")
+            posts = data.get("posts", [])
+            return posts[0] if posts else None
+        except GhostNotFoundError:
+            return None
+
+    async def create_post(
+        self,
+        title: str,
+        content: str,
+        status: str = "draft",
+        slug: str | None = None,
+        excerpt: str | None = None,
+        feature_image: str | None = None,
+        tags: list[str] | None = None,
+        published_at: str | None = None,
+    ) -> dict[str, Any]:
+        """Create a new post.
+
+        Args:
+            title: Post title.
+            content: Post content (HTML or Markdown).
+            status: Post status ('draft', 'published', 'scheduled').
+            slug: Optional URL slug.
+            excerpt: Optional post excerpt.
+            feature_image: Optional feature image URL.
+            tags: Optional list of tag names.
+            published_at: Optional ISO 8601 datetime string for scheduled posts.
+
+        Returns:
+            Created post dict.
+        """
+        post_data: dict[str, Any] = {
+            "title": title,
+            "mobiledoc": _convert_to_mobiledoc(content),
+            "status": status,
+        }
+
+        if slug:
+            post_data["slug"] = slug
+        if excerpt:
+            post_data["custom_excerpt"] = excerpt
+        if feature_image:
+            post_data["feature_image"] = feature_image
+        if tags:
+            post_data["tags"] = [{"name": tag} for tag in tags]
+        if published_at:
+            post_data["published_at"] = published_at
+
+        data = await self._post("/ghost/api/admin/posts/", {"posts": [post_data]})
+        posts = data.get("posts", [])
+        return posts[0] if posts else {}
+
+    async def update_post(
+        self,
+        post_id: str,
+        title: str | None = None,
+        content: str | None = None,
+        status: str | None = None,
+        slug: str | None = None,
+        excerpt: str | None = None,
+        feature_image: str | None = None,
+        tags: list[str] | None = None,
+        published_at: str | None = None,
+    ) -> dict[str, Any] | None:
+        """Update an existing post.
+
+        Args:
+            post_id: The post ID to update.
+            title: Optional new title.
+            content: Optional new content (HTML or Markdown).
+            status: Optional new status ('draft', 'published', 'scheduled').
+            slug: Optional new URL slug.
+            excerpt: Optional new excerpt.
+            feature_image: Optional new feature image URL.
+            tags: Optional new list of tag names.
+            published_at: Optional new published_at timestamp.
+
+        Returns:
+            Updated post dict or None if not found.
+        """
+        post_data: dict[str, Any] = {}
+
+        if title is not None:
+            post_data["title"] = title
+        if content is not None:
+            post_data["mobiledoc"] = _convert_to_mobiledoc(content)
+        if status is not None:
+            post_data["status"] = status
+        if slug is not None:
+            post_data["slug"] = slug
+        if excerpt is not None:
+            post_data["custom_excerpt"] = excerpt
+        if feature_image is not None:
+            post_data["feature_image"] = feature_image
+        if tags is not None:
+            post_data["tags"] = [{"name": tag} for tag in tags]
+        if published_at is not None:
+            post_data["published_at"] = published_at
+
+        try:
+            data = await self._put(f"/ghost/api/admin/posts/{post_id}/", {"posts": [post_data]})
+            posts = data.get("posts", [])
+            return posts[0] if posts else None
+        except GhostNotFoundError:
+            return None
+
+    async def delete_post(self, post_id: str) -> bool:
+        """Delete a post by ID.
+
+        Args:
+            post_id: The post ID to delete.
+
+        Returns:
+            True if deleted successfully, False otherwise.
+        """
+        try:
+            await self._delete(f"/ghost/api/admin/posts/{post_id}/")
+            return True
+        except GhostNotFoundError:
+            return False
 
     # -------------------------------------------------------------------------
     # Members

@@ -45,20 +45,66 @@ asyncio.run(main())
 
 ## API Coverage
 
-| Endpoint | Method |
-|----------|--------|
-| Site info | `get_site()` |
-| Posts count | `get_posts_count()` |
-| Latest post | `get_latest_post()` |
-| Members count | `get_members_count()` |
-| MRR | `get_mrr()` |
-| Newsletters | `get_newsletters()` |
-| Latest email | `get_latest_email()` |
-| Comments count | `get_comments_count()` |
-| Tiers | `get_tiers()` |
-| ActivityPub stats | `get_activitypub_stats()` |
-| Webhooks | `create_webhook()`, `delete_webhook()` |
-| Validate credentials | `validate_credentials()` |
+### Site
+
+| Endpoint    | Method        |
+|-------------|---------------|
+| Site info   | `get_site()`  |
+
+### Posts
+
+| Endpoint         | Method                         |
+|------------------|--------------------------------|
+| Posts count      | `get_posts_count()`            |
+| Latest post      | `get_latest_post()`            |
+| Get post by ID   | `get_post(post_id)`            |
+| Create post      | `create_post(title, content)`  |
+| Update post      | `update_post(post_id, ...)`    |
+| Delete post      | `delete_post(post_id)`         |
+
+### Members
+
+| Endpoint        | Method                 |
+|-----------------|------------------------|
+| Members count   | `get_members_count()`  |
+| MRR             | `get_mrr()`            |
+
+### Newsletters
+
+| Endpoint      | Method                  |
+|---------------|-------------------------|
+| Newsletters   | `get_newsletters()`      |
+| Latest email  | `get_latest_email()`     |
+
+### Comments
+
+| Endpoint         | Method                   |
+|------------------|--------------------------|
+| Comments count   | `get_comments_count()`   |
+
+### Tiers
+
+| Endpoint   | Method        |
+|------------|---------------|
+| Tiers      | `get_tiers()` |
+
+### ActivityPub
+
+| Endpoint            | Method                      |
+|---------------------|-----------------------------|
+| ActivityPub stats   | `get_activitypub_stats()`   |
+
+### Webhooks
+
+| Endpoint   | Method                                             |
+|------------|----------------------------------------------------|
+| Webhooks   | `create_webhook()`, `delete_webhook()`             |
+
+### Validation
+
+| Endpoint              | Method                     |
+|-----------------------|----------------------------|
+| Validate credentials  | `validate_credentials()`   |
 
 ## Getting Your Admin API Key
 
@@ -100,7 +146,9 @@ async def main():
 
 &nbsp;
 
-# Copyright & license
+---
+
+## Copyright & License
 
 Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
 Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.

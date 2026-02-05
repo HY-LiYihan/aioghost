@@ -29,3 +29,8 @@ htmlcov/
 
 # ruff
 .ruff_cache/
+
+# Environment variables (API keys, secrets)
+.env
+.env.local
+.env.*.local
