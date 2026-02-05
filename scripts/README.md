@@ -1,23 +1,36 @@
-# Batch Operations Scripts
+# Scripts
 
-Utilities for batch creating, updating, and deleting Ghost posts from local files.
+Utilities for working with the Ghost Admin API.
 
-## Setup
+## Quick Start
 
-1. Copy `.env.example` to `.env` and fill in your Ghost credentials:
+### 1. Interactive Setup
+
+Run the setup wizard to configure your credentials:
 
 ```bash
-cp .env.example .env
+python -m scripts.setup
 ```
 
-2. Edit `.env`:
+This will guide you through entering your Ghost site URL and Admin API Key, then automatically create a `.env` file.
 
-```env
-GHOST_API_URL=https://your-site.ghost.io
-GHOST_ADMIN_API_KEY=your-admin-api-key
+### 2. Test Connection
+
+Verify your configuration works:
+
+```bash
+python -m scripts.test_connection
 ```
 
-## Usage
+### 3. Test Post Operations
+
+Test creating, reading, updating, and deleting a post:
+
+```bash
+python -m scripts.test_post
+```
+
+## Batch Operations
 
 ### Create posts from Markdown files
 
@@ -55,7 +68,7 @@ Delete posts by their IDs:
 python -m scripts.batch_posts delete "post-id-1" "post-id-2" "post-id-3"
 ```
 
-## Markdown Frontmatter
+## Frontmatter Format
 
 You can add metadata to your Markdown files using frontmatter:
 

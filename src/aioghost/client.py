@@ -23,27 +23,25 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def _convert_to_mobiledoc(content: str) -> str:
-    """Convert plain text/HTML to Ghost mobiledoc format.
+    """Convert plain text/HTML to Ghost mobiledoc format using markdown card.
 
     Args:
-        content: The content to convert.
+        content: The content to convert (supports Markdown).
 
     Returns:
-        JSON string of mobiledoc format.
+        JSON string of mobiledoc format with markdown card.
     """
-    # Ghost mobiledoc basic structure for plain text/HTML
     mobiledoc = {
-        "version": "0.3.1",
+        "version": "0.3.2",
         "markups": [],
         "atoms": [],
-        "cards": [],
+        "cards": [
+            ["markdown", {"markdown": content}]
+        ],
         "sections": [
-            [10, 0]  # Markdown card with content
-        ]
+            [10, 0]  # Card section referencing card at index 0
+        ],
     }
-    # Using HTML card for simplicity
-    mobiledoc["cards"] = [["html", content]]
-    mobiledoc["sections"] = [[10, 0]]
     return json.dumps(mobiledoc)
 
 JWT_EXPIRY_MINUTES = 5
@@ -126,7 +124,8 @@ class GhostAdminAPI:
         """Get authorization headers for Ghost Admin API."""
         return {
             "Authorization": f"Ghost {self._generate_token()}",
-            "Accept-Version": "v5.0",
+            # Note: Don't specify Accept-Version to let Ghost auto-negotiate
+            "Accept-Encoding": "gzip",  # Explicitly request gzip only, not Brotli
         }
 
     async def _request(
@@ -173,6 +172,8 @@ class GhostAdminAPI:
                     data = await response.json()
                     errors = data.get("errors", [{}])
                     message = errors[0].get("message", "Validation failed")
+                    # Print full error details for debugging
+                    print(f"DEBUG: Validation error details: {errors}")
                     raise GhostValidationError(message)
                 if response.status >= 400:
                     text = await response.text()
@@ -207,6 +208,7 @@ class GhostAdminAPI:
         return await self._request("PUT", endpoint, json=json)
 
     # -------------------------------------------------------------------------
+
     # Site
     # -------------------------------------------------------------------------
 
@@ -345,27 +347,47 @@ class GhostAdminAPI:
         Returns:
             Updated post dict or None if not found.
         """
-        post_data: dict[str, Any] = {}
-
-        if title is not None:
-            post_data["title"] = title
-        if content is not None:
-            post_data["mobiledoc"] = _convert_to_mobiledoc(content)
-        if status is not None:
-            post_data["status"] = status
-        if slug is not None:
-            post_data["slug"] = slug
-        if excerpt is not None:
-            post_data["custom_excerpt"] = excerpt
-        if feature_image is not None:
-            post_data["feature_image"] = feature_image
-        if tags is not None:
-            post_data["tags"] = [{"name": tag} for tag in tags]
-        if published_at is not None:
-            post_data["published_at"] = published_at
-
         try:
+            # Get the existing post to get current values (including updated_at)
+            existing_post = await self.get_post(post_id)
+            if not existing_post:
+                return None
+
+            # Build post_data with only the fields that are being changed
+            post_data: dict[str, Any] = {}
+
+            if title is not None:
+                post_data["title"] = title
+            if content is not None:
+                post_data["mobiledoc"] = _convert_to_mobiledoc(content)
+            if status is not None:
+                post_data["status"] = status
+            if slug is not None:
+                post_data["slug"] = slug
+            if excerpt is not None:
+                post_data["custom_excerpt"] = excerpt
+            if feature_image is not None:
+                post_data["feature_image"] = feature_image
+            if tags is not None:
+                post_data["tags"] = [{"name": tag} for tag in tags]
+            if published_at is not None:
+                post_data["published_at"] = published_at
+
+            # Ghost v6.x requires updated_at to be present in update requests
+            if "updated_at" in existing_post:
+                post_data["updated_at"] = existing_post["updated_at"]
+
+            if not post_data:
+                # No fields to update
+                return await self.get_post(post_id)
+
+            # Debug: print the request data
+            _LOGGER.debug("Updating post %s with data: %s", post_id, post_data)
+
+            # Use PUT for updates (send array format for Ghost v6.x)
             data = await self._put(f"/ghost/api/admin/posts/{post_id}/", {"posts": [post_data]})
+
+            _LOGGER.debug("Update response: %s", data)
             posts = data.get("posts", [])
             return posts[0] if posts else None
         except GhostNotFoundError:
