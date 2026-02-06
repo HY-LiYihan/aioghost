@@ -35,6 +35,117 @@ async def main():
 asyncio.run(main())
 ```
 
+## Script Tools
+
+Utility scripts for quick setup, testing, and batch operations with Ghost Admin API.
+
+### Getting Started
+
+#### 1. Interactive Setup
+
+Run setup wizard to configure your credentials:
+
+```bash
+python -m scripts.setup
+```
+
+This will guide you through entering your Ghost site URL and Admin API Key, then automatically create a `.env` file.
+
+#### 2. Test Connection
+
+Verify your configuration works:
+
+```bash
+python -m scripts.test_connection
+```
+
+#### 3. Test Post Operations
+
+Test creating, reading, updating, and deleting a post:
+
+```bash
+python -m scripts.test_post
+```
+
+### Batch Operations
+
+The batch script automatically detects whether to **create** or **update** posts:
+- If the Markdown file has an `id` field → **updates** the existing post
+- If no `id` field → **creates** a new post and writes the ID back to the file
+
+Output format shows the **file name** for easy identification.
+
+#### Create Posts from Markdown Files
+
+Create multiple posts from `.md` files in a directory:
+
+```bash
+python -m scripts.batch_posts create ./posts
+```
+
+Use a custom pattern:
+
+```bash
+python -m scripts.batch_posts create ./posts --pattern "draft-*.md"
+```
+
+Preview without creating:
+
+```bash
+python -m scripts.batch_posts create ./posts --dry-run
+```
+
+#### Update Existing Posts
+
+Update posts by specifying their IDs:
+
+```bash
+python -m scripts.batch_posts update ./posts --post-ids "post-id-1" "post-id-2"
+```
+
+#### Delete Posts
+
+Delete posts by their IDs:
+
+```bash
+python -m scripts.batch_posts delete "post-id-1" "post-id-2"
+```
+
+### Frontmatter Format
+
+You can add metadata to your Markdown files using frontmatter:
+
+```markdown
+---
+title: My Awesome Post
+status: published
+slug: my-awesome-post
+url: /my-awesome-post
+canonical_url: https://mysite.com/posts/my-awesome-post
+tags: technology, python, ghost
+excerpt: A brief summary of the post
+feature_image: https://example.com/image.jpg
+published_at: 2026-02-05T10:00:00.000Z
+---
+
+# My Awesome Post
+
+This is the content of your post...
+```
+
+| Field | Description | Required |
+|-------|-------------|----------|
+| `title` | Post title | No (defaults to filename) |
+| `status` | `draft`, `published`, or `scheduled` | No (defaults to `draft`) |
+| `id` | Ghost post ID (for updates) | No (if present, updates existing post) |
+| `slug` | URL slug | No |
+| `url` | Canonical URL (for custom permalinks) | No |
+| `canonical_url` | Canonical URL (for SEO, overrides Ghost's default) | No |
+| `tags` | Comma-separated tags | No |
+| `excerpt` | Post excerpt | No |
+| `feature_image` | Feature image URL | No |
+| `published_at` | ISO 8601 datetime (for scheduled posts) | No |
+
 ## Features
 
 - **Fully async** — Built on `aiohttp` for non-blocking I/O
